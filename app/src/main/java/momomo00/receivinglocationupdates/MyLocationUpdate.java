@@ -1,6 +1,8 @@
 package momomo00.receivinglocationupdates;
 
 import android.Manifest;
+import android.content.Context;
+import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
 import android.location.Location;
 import android.os.Bundle;
@@ -25,10 +27,8 @@ import java.util.Date;
 public class MyLocationUpdate
     implements GoogleApiClient.ConnectionCallbacks
         , GoogleApiClient.OnConnectionFailedListener
+        , MyPermissionChecker.WhenGrantedListener
         , LocationListener {
-
-    private final static int REQUEST_CODE_LOCATION_PERMISSION = 1000;
-    private final static String TAG = "MyLocationUpdate";
 
     private final static int UPDATE_INTERVAL_IN_MILLISECONDS = 10000;
     private final static int FASTEST_UPDATE_INTERVAL_IN_MILLISECONDS = UPDATE_INTERVAL_IN_MILLISECONDS / 2;
@@ -36,17 +36,16 @@ public class MyLocationUpdate
     private MyLocationUpdateListener    mMyLocationUpdateListener;
 
     private boolean mRequestingLocationUpdates;
+    private boolean mConnectionFlag;
 
     private GoogleApiClient mGoogleApiClient;
     private LocationRequest mLocationRequest;
 
-    private Location    mCurrentLocation;
-    private Date        mDate;
+    private Context mContext;
 
-    private AppCompatActivity mActivity;
-
-    public MyLocationUpdate(AppCompatActivity activity) {
-        mActivity = activity;
+    public MyLocationUpdate(Context context) {
+        Log.d(MyLog.TAG, "MyLocationUpdate: MyLocationUpdate");
+        mContext = context;
         mMyLocationUpdateListener = null;
         mRequestingLocationUpdates = false;
 
@@ -54,7 +53,8 @@ public class MyLocationUpdate
     }
 
     private void buildGoogleApiClient() {
-        mGoogleApiClient = new GoogleApiClient.Builder(mActivity)
+        Log.d(MyLog.TAG, "MyLocationUpdate: buildGoogleApiClient");
+        mGoogleApiClient = new GoogleApiClient.Builder(mContext)
                 .addConnectionCallbacks(this)
                 .addOnConnectionFailedListener(this)
                 .addApi(LocationServices.API)
@@ -64,6 +64,7 @@ public class MyLocationUpdate
     }
 
     private void createLocationRequest() {
+        Log.d(MyLog.TAG, "MyLocationUpdate: createLocationRequest");
         mLocationRequest = new LocationRequest();
         mLocationRequest.setInterval(UPDATE_INTERVAL_IN_MILLISECONDS);
         mLocationRequest.setFastestInterval(FASTEST_UPDATE_INTERVAL_IN_MILLISECONDS);
@@ -72,17 +73,26 @@ public class MyLocationUpdate
 
     @Override
     public void onConnected(@Nullable Bundle bundle) {
-        Log.d(TAG, "onConnected: start");
+        Log.d(MyLog.TAG, "MyLocationUpdate: onConnected");
         if(!mRequestingLocationUpdates) {
-            Log.d(TAG, "onConnected: mRequestingLocationUpdates: false");
-            return;
+            startLocationUpdates();
         }
-        Log.d(TAG, "onConnected: mRequestingLocationUpdates: true");
-        startLocationUpdates();
+    }
+
+    @Override
+    public void onConnectionSuspended(int i) {
+        Log.d(MyLog.TAG, "MyLocationUpdate: onConnectionSuspended");
+    }
+
+    @Override
+    public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
+        Log.d(MyLog.TAG, "MyLocationUpdate: onConnectionSuspended");
     }
 
     private void startLocationUpdates() {
-        if(!checkPermission()) {
+        Log.d(MyLog.TAG, "MyLocationUpdate: startLocationUpdates");
+        if(ActivityCompat.checkSelfPermission(mContext, Manifest.permission.ACCESS_FINE_LOCATION)
+                != PackageManager.PERMISSION_GRANTED) {
             return;
         }
         LocationServices.FusedLocationApi.requestLocationUpdates(
@@ -90,48 +100,47 @@ public class MyLocationUpdate
     }
 
     @Override
-    public void onConnectionSuspended(int i) {
-
-    }
-
-    @Override
-    public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
-
-    }
-
-    @Override
     public void onLocationChanged(Location location) {
-        mCurrentLocation = location;
-        mDate = new Date();
-
-        mMyLocationUpdateListener.onLocationUpdate(mCurrentLocation, mDate);
+        Log.d(MyLog.TAG, "MyLocationUpdate: onLocationChanged");
+        mMyLocationUpdateListener(location, new Date());
     }
 
     public void stopLocationUpdates() {
-        LocationServices.FusedLocationApi.removeLocationUpdates(
-                mGoogleApiClient, this);
+        Log.d(MyLog.TAG, "MyLocationUpdate: stopLocationUpdates");
+        if(mGoogleApiClient.isConnected()) {
+            LocationServices.FusedLocationApi.removeLocationUpdates(
+                    mGoogleApiClient, this);
+        }
     }
 
     public void restartLocationUpdates() {
+        Log.d(MyLog.TAG, "MyLocationUpdate: restartLocationUpdates");
         if(mGoogleApiClient.isConnected() && !mRequestingLocationUpdates) {
             startLocationUpdates();
         }
     }
 
-    private boolean checkPermission() {
-        int  selfPermission = ActivityCompat.checkSelfPermission(
-                mActivity, Manifest.permission.ACCESS_COARSE_LOCATION);
-
-        if(selfPermission != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(mActivity
-                , new String[] {android.Manifest.permission.ACCESS_COARSE_LOCATION}
-                , REQUEST_CODE_LOCATION_PERMISSION);
-        }
-        return true;
+    public interface MyLocationUpdateListener {
+        void onLocationUpdate(Location location, Date date);
     }
 
     public void setMyLocationUpdateListener(MyLocationUpdateListener listener) {
+        Log.d(MyLog.TAG, "MyLocationUpdate: setMyLocationUpdateListener");
         mMyLocationUpdateListener = listener;
     }
 
+    public void mMyLocationUpdateListener(Location location, Date date) {
+        if(mMyLocationUpdateListener == null) {
+            return;
+        }
+        mMyLocationUpdateListener.onLocationUpdate(location, date);
+    }
+
+    @Override
+    public void whenGranted() {
+        Log.d(MyLog.TAG, "MyLocationUpdate: whenGranted");
+        if(mGoogleApiClient.isConnected() && !mRequestingLocationUpdates) {
+            startLocationUpdates();
+        }
+    }
 }

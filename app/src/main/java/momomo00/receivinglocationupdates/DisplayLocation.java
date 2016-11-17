@@ -2,6 +2,7 @@ package momomo00.receivinglocationupdates;
 
 import android.location.Location;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
@@ -16,7 +17,7 @@ import java.util.Date;
  */
 
 public class DisplayLocation
-    implements MyLocationUpdateListener {
+    implements MyLocationUpdate.MyLocationUpdateListener {
 
     private TextView mLatitudeTextView;
     private TextView mLongitudeTextView;
@@ -25,6 +26,7 @@ public class DisplayLocation
     private Button  mStopUpdateButton;
 
     public DisplayLocation(AppCompatActivity activity) {
+        Log.d(MyLog.TAG, "DisplayLocation: DisplayLocation");
         mLastUpdateTimeTextView = (TextView)activity.findViewById(R.id.last_update_time_text);
         mLongitudeTextView = (TextView)activity.findViewById(R.id.longitude_text);
         mLatitudeTextView = (TextView)activity.findViewById(R.id.latitude_text);
@@ -49,6 +51,7 @@ public class DisplayLocation
 
     @Override
     public void onLocationUpdate(Location location, Date date) {
+        Log.d(MyLog.TAG, "DisplayLocation: onLocationUpdate");
         mLatitudeTextView.setText(String.valueOf(location.getLatitude()));
         mLongitudeTextView.setText(String.valueOf(location.getLongitude()));
         String lastUpdateTime = DateFormat.getInstance().format(date);
