@@ -26,6 +26,7 @@ public class MyPermissionChecker {
 
     private Activity mActivity;
     private WhenGrantedListener mWhenGrantedListener;
+    private NotGetPermissionListener mNotGetPermissionListener;
 
     public MyPermissionChecker() {
         Log.d(MyLog.TAG, "MyPermissionChecker: MyPermissionChecker()");
@@ -142,7 +143,7 @@ public class MyPermissionChecker {
                             .setPositiveButton(R.string.dialog_positive_button, new DialogInterface.OnClickListener() {
                                 @Override
                                 public void onClick(DialogInterface dialogInterface, int i) {
-                                    openSettings();
+                                    executionNotGetPermission();
                                 }
                             })
                             .create()
@@ -179,8 +180,11 @@ public class MyPermissionChecker {
                 result = false;
                 break;
             }
+        }
+
+        if(result) {
             new AlertDialog.Builder(mActivity)
-                    .setTitle("パーミッション取得エラー" + permission)
+                    .setTitle("パーミッション取得エラー")
                     .setMessage("再試行する場合は、再度Requestボタンを押してください")
                     .setPositiveButton(R.string.dialog_positive_button, new DialogInterface.OnClickListener() {
                         @Override
@@ -195,26 +199,13 @@ public class MyPermissionChecker {
         return result;
     }
 
-    private void openSettings() {
-        Log.d(MyLog.TAG, "MyPermissionChecker: openSettings()");
-        Intent intent = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
-        Uri uri = Uri.fromParts("package", mActivity.getPackageName(), null);
-        intent.setData(uri);
-        mActivity.startActivity(intent);
-    }
-
-    public MyPermissionChecker setActivity(Activity activity) {
-        mActivity = activity;
-        return this;
-    }
-
     public interface WhenGrantedListener {
         void whenGranted();
     }
 
-    public MyPermissionChecker setWhenGrantedListener(WhenGrantedListener whenGrantedListener) {
+    public MyPermissionChecker setWhenGrantedListener(WhenGrantedListener listener) {
         Log.d(MyLog.TAG, "MyPermissionChecker: setWhenGrantedListener(WhenGrantedListener)");
-        mWhenGrantedListener = whenGrantedListener;
+        mWhenGrantedListener = listener;
         return this;
     }
 
@@ -225,5 +216,21 @@ public class MyPermissionChecker {
             return;
         }
         mWhenGrantedListener.whenGranted();
+    }
+
+    public interface NotGetPermissionListener {
+        void notGetPermission();
+    }
+
+    public MyPermissionChecker setNotGetPermissionListener(NotGetPermissionListener listener) {
+        mNotGetPermissionListener = listener;
+        return this;
+    }
+
+    private void executionNotGetPermission() {
+        if(mNotGetPermissionListener == null) {
+            return;
+        }
+        mNotGetPermissionListener.notGetPermission();
     }
 }

@@ -1,6 +1,9 @@
 package momomo00.receivinglocationupdates;
 
 import android.Manifest;
+import android.content.Intent;
+import android.net.Uri;
+import android.provider.Settings;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -23,8 +26,18 @@ public class MainActivity extends AppCompatActivity {
         mMyLocationUpdate.setMyLocationUpdateListener(mDisplayLocation);
 
         mMyPermissionChecker = new MyPermissionChecker(this)
-                .setWhenGrantedListener(mMyLocationUpdate);
-        mMyPermissionChecker.requestPermissions(new String[]{Manifest.permission.ACCESS_COARSE_LOCATION});
+                .setWhenGrantedListener(mMyLocationUpdate)
+                .setNotGetPermissionListener(new MyPermissionChecker.NotGetPermissionListener() {
+                    @Override
+                    public void notGetPermission() {
+                        Log.d(MyLog.TAG, "MainActivity: notGetPermission()");
+                        Intent intent = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
+                        Uri uri = Uri.fromParts("package", getPackageName(), null);
+                        intent.setData(uri);
+                        startActivity(intent);
+                    }
+                });
+        mMyPermissionChecker.requestPermissions(new String[]{Manifest.permission.ACCESS_FINE_LOCATION});
     }
 
     @Override
