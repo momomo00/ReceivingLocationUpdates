@@ -2,14 +2,12 @@ package momomo00.receivinglocationupdates;
 
 import android.Manifest;
 import android.content.Context;
-import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
 import android.location.Location;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
-import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 
 import com.google.android.gms.common.ConnectionResult;
@@ -91,8 +89,13 @@ public class MyLocationUpdate
 
     private void startLocationUpdates() {
         Log.d(MyLog.TAG, "MyLocationUpdate: startLocationUpdates");
-        if(ActivityCompat.checkSelfPermission(mContext, Manifest.permission.ACCESS_FINE_LOCATION)
-                != PackageManager.PERMISSION_GRANTED) {
+//        if(ActivityCompat.checkSelfPermission(mContext, Manifest.permission.ACCESS_FINE_LOCATION)
+//                != PackageManager.PERMISSION_GRANTED) {
+//            return;
+//        }
+        boolean result
+                = MyPermissionChecker.checkPermission(mContext, Manifest.permission.ACCESS_FINE_LOCATION);
+        if(!result) {
             return;
         }
         LocationServices.FusedLocationApi.requestLocationUpdates(
@@ -102,7 +105,7 @@ public class MyLocationUpdate
     @Override
     public void onLocationChanged(Location location) {
         Log.d(MyLog.TAG, "MyLocationUpdate: onLocationChanged");
-        mMyLocationUpdateListener(location, new Date());
+        executionOnLocationUpdate(location, new Date());
     }
 
     public void stopLocationUpdates() {
@@ -129,7 +132,7 @@ public class MyLocationUpdate
         mMyLocationUpdateListener = listener;
     }
 
-    public void mMyLocationUpdateListener(Location location, Date date) {
+    public void executionOnLocationUpdate(Location location, Date date) {
         if(mMyLocationUpdateListener == null) {
             return;
         }

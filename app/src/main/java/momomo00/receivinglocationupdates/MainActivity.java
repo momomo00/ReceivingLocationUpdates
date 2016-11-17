@@ -1,5 +1,6 @@
 package momomo00.receivinglocationupdates;
 
+import android.Manifest;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -21,10 +22,9 @@ public class MainActivity extends AppCompatActivity {
         mMyLocationUpdate = new MyLocationUpdate(this);
         mMyLocationUpdate.setMyLocationUpdateListener(mDisplayLocation);
 
-        mMyPermissionChecker = new MyPermissionChecker()
-                .setActivity(this)
+        mMyPermissionChecker = new MyPermissionChecker(this)
                 .setWhenGrantedListener(mMyLocationUpdate);
-        mMyPermissionChecker.requestPermissions();
+        mMyPermissionChecker.requestPermissions(new String[]{Manifest.permission.ACCESS_COARSE_LOCATION});
     }
 
     @Override
