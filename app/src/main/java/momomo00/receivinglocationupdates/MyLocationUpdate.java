@@ -2,12 +2,10 @@ package momomo00.receivinglocationupdates;
 
 import android.Manifest;
 import android.content.Context;
-import android.content.pm.PackageManager;
 import android.location.Location;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-import android.support.v4.app.ActivityCompat;
 import android.util.Log;
 
 import com.google.android.gms.common.ConnectionResult;
@@ -25,7 +23,7 @@ import java.util.Date;
 public class MyLocationUpdate
     implements GoogleApiClient.ConnectionCallbacks
         , GoogleApiClient.OnConnectionFailedListener
-        , MyPermissionChecker.WhenGrantedListener
+        , MyPermissionManager.WhenGrantedListener
         , LocationListener {
 
     private final static int UPDATE_INTERVAL_IN_MILLISECONDS = 10000;
@@ -94,7 +92,7 @@ public class MyLocationUpdate
 //            return;
 //        }
         boolean result
-                = MyPermissionChecker.checkPermission(mContext, Manifest.permission.ACCESS_FINE_LOCATION);
+                = MyPermissionManager.checkPermission(mContext, Manifest.permission.ACCESS_FINE_LOCATION);
         if(!result) {
             return;
         }

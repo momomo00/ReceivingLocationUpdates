@@ -13,7 +13,7 @@ public class MainActivity extends AppCompatActivity {
 
     private DisplayLocation     mDisplayLocation;
     private MyLocationUpdate    mMyLocationUpdate;
-    private MyPermissionChecker mMyPermissionChecker;
+    private MyPermissionManager mMyPermissionChecker;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -25,9 +25,9 @@ public class MainActivity extends AppCompatActivity {
         mMyLocationUpdate = new MyLocationUpdate(this);
         mMyLocationUpdate.setMyLocationUpdateListener(mDisplayLocation);
 
-        mMyPermissionChecker = new MyPermissionChecker(this)
+        mMyPermissionChecker = new MyPermissionManager(this)
                 .setWhenGrantedListener(mMyLocationUpdate)
-                .setNotGetPermissionListener(new MyPermissionChecker.NotGetPermissionListener() {
+                .setNotGetPermissionListener(new MyPermissionManager.NotGetPermissionListener() {
                     @Override
                     public void notGetPermission() {
                         Log.d(MyLog.TAG, "MainActivity: notGetPermission()");

@@ -18,7 +18,7 @@ import java.util.List;
  * Created by songo_000 on 2016/11/11.
  */
 
-public class MyPermissionChecker {
+public class MyPermissionManager {
 
     // パーミッションの要求番号
     private final int REQUEST_CODE_LOCATION_PERMISSION = 1000;
@@ -33,7 +33,7 @@ public class MyPermissionChecker {
     /**
      * コンストラクタ
      */
-    public MyPermissionChecker() {
+    public MyPermissionManager() {
         Log.d(MyLog.TAG, "MyPermissionChecker: MyPermissionChecker()");
         mActivity = null;
         mWhenGrantedListener = null;
@@ -44,7 +44,7 @@ public class MyPermissionChecker {
      *
      * @param activity アクティビティ
      */
-    public MyPermissionChecker(Activity activity) {
+    public MyPermissionManager(Activity activity) {
         this();
         Log.d(MyLog.TAG, "MyPermissionChecker: MyPermissionChecker(Activity)");
         mActivity = activity;
@@ -279,7 +279,7 @@ public class MyPermissionChecker {
      * @param listener リスナー
      * @return 自分
      */
-    public MyPermissionChecker setWhenGrantedListener(WhenGrantedListener listener) {
+    public MyPermissionManager setWhenGrantedListener(WhenGrantedListener listener) {
         Log.d(MyLog.TAG, "MyPermissionChecker: setWhenGrantedListener(WhenGrantedListener)");
         mWhenGrantedListener = listener;
         return this;
@@ -309,7 +309,7 @@ public class MyPermissionChecker {
      * @param listener リスナー
      * @return 自分
      */
-    public MyPermissionChecker setNotGetPermissionListener(NotGetPermissionListener listener) {
+    public MyPermissionManager setNotGetPermissionListener(NotGetPermissionListener listener) {
         mNotGetPermissionListener = listener;
         return this;
     }
