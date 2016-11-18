@@ -32,10 +32,12 @@ public class MyLocationUpdate
     private MyLocationUpdateListener    mMyLocationUpdateListener;
 
     private boolean mRequestingLocationUpdates;
-    private boolean mConnectionFlag;
 
     private GoogleApiClient mGoogleApiClient;
     private LocationRequest mLocationRequest;
+
+    private Location    mCurrentLocation;
+    private Date    mLastUpdateTime;
 
     private Context mContext;
 
@@ -44,6 +46,8 @@ public class MyLocationUpdate
         mContext = context;
         mMyLocationUpdateListener = null;
         mRequestingLocationUpdates = false;
+        mCurrentLocation = null;
+        mLastUpdateTime = null;
 
         buildGoogleApiClient();
     }
@@ -70,7 +74,16 @@ public class MyLocationUpdate
     @Override
     public void onConnected(@Nullable Bundle bundle) {
         Log.d(MyLog.TAG, "MyLocationUpdate: onConnected");
-        if(!mRequestingLocationUpdates) {
+
+        if(mCurrentLocation == null) {
+            if(MyPermissionManager.checkPermission(mContext, Manifest.permission.ACCESS_FINE_LOCATION)) {
+                mCurrentLocation = LocationServices.FusedLocationApi.getLastLocation(mGoogleApiClient);
+            }
+            mLastUpdateTime = new Date();
+            executionOnLocationUpdate(mCurrentLocation, mLastUpdateTime);
+        }
+
+        if(mRequestingLocationUpdates) {
             startLocationUpdates();
         }
     }
@@ -78,6 +91,7 @@ public class MyLocationUpdate
     @Override
     public void onConnectionSuspended(int i) {
         Log.d(MyLog.TAG, "MyLocationUpdate: onConnectionSuspended");
+        mGoogleApiClient.connect();
     }
 
     @Override
@@ -85,12 +99,8 @@ public class MyLocationUpdate
         Log.d(MyLog.TAG, "MyLocationUpdate: onConnectionSuspended");
     }
 
-    private void startLocationUpdates() {
+    public void startLocationUpdates() {
         Log.d(MyLog.TAG, "MyLocationUpdate: startLocationUpdates");
-//        if(ActivityCompat.checkSelfPermission(mContext, Manifest.permission.ACCESS_FINE_LOCATION)
-//                != PackageManager.PERMISSION_GRANTED) {
-//            return;
-//        }
         boolean result
                 = MyPermissionManager.checkPermission(mContext, Manifest.permission.ACCESS_FINE_LOCATION);
         if(!result) {
@@ -103,22 +113,34 @@ public class MyLocationUpdate
     @Override
     public void onLocationChanged(Location location) {
         Log.d(MyLog.TAG, "MyLocationUpdate: onLocationChanged");
-        executionOnLocationUpdate(location, new Date());
+        mCurrentLocation = location;
+        mLastUpdateTime = new Date();
+        executionOnLocationUpdate(location, mLastUpdateTime);
     }
 
     public void stopLocationUpdates() {
         Log.d(MyLog.TAG, "MyLocationUpdate: stopLocationUpdates");
-        if(mGoogleApiClient.isConnected()) {
-            LocationServices.FusedLocationApi.removeLocationUpdates(
-                    mGoogleApiClient, this);
+        LocationServices.FusedLocationApi.removeLocationUpdates(mGoogleApiClient, this);
+    }
+
+    public void onStart() {
+        mGoogleApiClient.connect();
+    }
+
+    public void onResume() {
+        if(mGoogleApiClient.isConnected() && mRequestingLocationUpdates) {
+            startLocationUpdates();
         }
     }
 
-    public void restartLocationUpdates() {
-        Log.d(MyLog.TAG, "MyLocationUpdate: restartLocationUpdates");
-        if(mGoogleApiClient.isConnected() && !mRequestingLocationUpdates) {
-            startLocationUpdates();
+    public void onPause() {
+        if(mGoogleApiClient.isConnected()) {
+            stopLocationUpdates();
         }
+    }
+
+    public void onStop() {
+        mGoogleApiClient.disconnect();
     }
 
     public interface MyLocationUpdateListener {
@@ -130,7 +152,7 @@ public class MyLocationUpdate
         mMyLocationUpdateListener = listener;
     }
 
-    public void executionOnLocationUpdate(Location location, Date date) {
+    private void executionOnLocationUpdate(Location location, Date date) {
         if(mMyLocationUpdateListener == null) {
             return;
         }
@@ -140,8 +162,13 @@ public class MyLocationUpdate
     @Override
     public void whenGranted() {
         Log.d(MyLog.TAG, "MyLocationUpdate: whenGranted");
-        if(mGoogleApiClient.isConnected() && !mRequestingLocationUpdates) {
-            startLocationUpdates();
-        }
+    }
+
+    public boolean getRequestingLocationUpdates() {
+        return mRequestingLocationUpdates;
+    }
+
+    public void setRequestingLocationUpdates(boolean request) {
+        mRequestingLocationUpdates = request;
     }
 }

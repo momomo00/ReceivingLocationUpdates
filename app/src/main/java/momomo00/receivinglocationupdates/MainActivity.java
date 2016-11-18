@@ -25,6 +25,8 @@ public class MainActivity extends AppCompatActivity {
         mMyLocationUpdate = new MyLocationUpdate(this);
         mMyLocationUpdate.setMyLocationUpdateListener(mDisplayLocation);
 
+        mDisplayLocation.setMyLocationUpdate(mMyLocationUpdate);
+
         mMyPermissionChecker = new MyPermissionManager(this)
                 .setWhenGrantedListener(mMyLocationUpdate)
                 .setNotGetPermissionListener(new MyPermissionManager.NotGetPermissionListener() {
@@ -43,31 +45,31 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onStart() {
         Log.d(MyLog.TAG, "MainActivity: onStart");
-
         super.onStart();
+        mMyLocationUpdate.onStart();
    }
 
     @Override
-    protected void onStop() {
-        Log.d(MyLog.TAG, "MainActivity: onStop");
-
-        super.onStop();
+    protected void onResume() {
+        Log.d(MyLog.TAG, "MainActivity: onResume");
+        super.onResume();
+        mMyLocationUpdate.onResume();
+//        mMyLocationUpdate.restartLocationUpdates();
     }
 
     @Override
     protected void onPause() {
         Log.d(MyLog.TAG, "MainActivity: onPause");
-
         super.onPause();
-        mMyLocationUpdate.stopLocationUpdates();
+        mMyLocationUpdate.onPause();
+//        mMyLocationUpdate.stopLocationUpdates();
     }
 
     @Override
-    protected void onResume() {
-        Log.d(MyLog.TAG, "MainActivity: onResume");
-
-        super.onResume();
-        mMyLocationUpdate.restartLocationUpdates();
+    protected void onStop() {
+        Log.d(MyLog.TAG, "MainActivity: onStop");
+        mMyLocationUpdate.onStop();
+        super.onStop();
     }
 
     @Override

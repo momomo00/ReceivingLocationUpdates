@@ -25,6 +25,8 @@ public class DisplayLocation
     private Button  mStartUpdateButton;
     private Button  mStopUpdateButton;
 
+    private MyLocationUpdate    mMyLocationUpdate;
+
     public DisplayLocation(AppCompatActivity activity) {
         Log.d(MyLog.TAG, "DisplayLocation: DisplayLocation");
         mLastUpdateTimeTextView = (TextView)activity.findViewById(R.id.last_update_time_text);
@@ -35,7 +37,11 @@ public class DisplayLocation
         mStartUpdateButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-
+                if(!mMyLocationUpdate.getRequestingLocationUpdates()) {
+                    mMyLocationUpdate.setRequestingLocationUpdates(true);
+                    setButtonsEnableState(false, true);
+                    mMyLocationUpdate.startLocationUpdates();
+                }
             }
         });
 
@@ -43,10 +49,15 @@ public class DisplayLocation
         mStopUpdateButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-
+                if(mMyLocationUpdate.getRequestingLocationUpdates()) {
+                    mMyLocationUpdate.setRequestingLocationUpdates(false);
+                    setButtonsEnableState(true, false);
+                    mMyLocationUpdate.stopLocationUpdates();
+                }
             }
         });
 
+        mMyLocationUpdate = null;
     }
 
     @Override
@@ -56,5 +67,14 @@ public class DisplayLocation
         mLongitudeTextView.setText(String.valueOf(location.getLongitude()));
         String lastUpdateTime = DateFormat.getInstance().format(date);
         mLastUpdateTimeTextView.setText(lastUpdateTime);
+    }
+
+    private void setButtonsEnableState(boolean start, boolean stop) {
+        mStartUpdateButton.setEnabled(start);
+        mStopUpdateButton.setEnabled(stop);
+    }
+
+    public void setMyLocationUpdate(MyLocationUpdate myLocationUpdate) {
+        mMyLocationUpdate = myLocationUpdate;
     }
 }
