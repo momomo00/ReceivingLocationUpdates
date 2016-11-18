@@ -78,9 +78,9 @@ public class MyLocationUpdate
         if(mCurrentLocation == null) {
             if(MyPermissionManager.checkPermission(mContext, Manifest.permission.ACCESS_FINE_LOCATION)) {
                 mCurrentLocation = LocationServices.FusedLocationApi.getLastLocation(mGoogleApiClient);
+                mLastUpdateTime = new Date();
+                executionOnLocationUpdate(mCurrentLocation, mLastUpdateTime);
             }
-            mLastUpdateTime = new Date();
-            executionOnLocationUpdate(mCurrentLocation, mLastUpdateTime);
         }
 
         if(mRequestingLocationUpdates) {
@@ -106,6 +106,7 @@ public class MyLocationUpdate
         if(!result) {
             return;
         }
+
         LocationServices.FusedLocationApi.requestLocationUpdates(
                 mGoogleApiClient, mLocationRequest, this);
     }
